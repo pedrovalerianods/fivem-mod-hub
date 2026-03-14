@@ -5,8 +5,8 @@ import { useState } from 'react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
-  { to: '/categorias', label: 'Categorias' },
-  { to: '/biblioteca', label: 'Biblioteca', icon: Library },
+  { to: '/perfil', label: 'Perfil' },
+  { to: '/admin', label: 'Meus Mods' },
 ];
 
 export default function Navbar() {
@@ -46,17 +46,15 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            to="/admin"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors"
-          >
-            <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />
-            Admin
-          </Link>
           <Link to="/perfil" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors">
             <div className="h-7 w-7 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
               <User className="h-4 w-4 text-primary" strokeWidth={1.5} />
             </div>
+            Perfil
+          </Link>
+          <Link to="/admin" className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors">
+            <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Meus Mods
           </Link>
         </div>
 
@@ -83,11 +81,11 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link to="/admin" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
-            Admin
-          </Link>
           <Link to="/perfil" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
             Perfil
+          </Link>
+          <Link to="/admin" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
+            Meus Mods
           </Link>
         </motion.div>
       )}

@@ -6,9 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Home from "@/pages/Home";
-import CategoriesPage from "@/pages/CategoriesPage";
-import ProductPage from "@/pages/ProductPage";
-import LibraryPage from "@/pages/LibraryPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPage from "@/pages/AdminPage";
 import NotFound from "@/pages/NotFound";
@@ -24,9 +21,6 @@ const App = () => (
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/categorias" element={<CategoriesPage />} />
-          <Route path="/produto/:id" element={<ProductPage />} />
-          <Route path="/biblioteca" element={<LibraryPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
