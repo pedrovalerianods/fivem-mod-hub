@@ -1,13 +1,66 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingCart, FileText, Download } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
-import { CATEGORY_MAP } from '@/types';
+import { CATEGORY_MAP, type Product } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProductPage() {
   const { id } = useParams();
-  const product = MOCK_PRODUCTS.find((p) => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    const loadProduct = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, product_files(*)')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar produto', error);
+        setLoading(false);
+        return;
+      }
+
+      const parsed = {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        price: Number(data.price ?? 0),
+        videoUrl: data.video_url ?? '',
+        imageUrl: data.image_url ?? '',
+        createdAt: data.created_at ?? '',
+        files: (data.product_files ?? []).map((f: any) => ({
+          id: f.id,
+          productId: f.product_id,
+          fileName: f.file_name,
+          fileType: f.file_type,
+        })),
+      } as Product;
+
+      setProduct(parsed);
+      setLoading(false);
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando produto...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

@@ -1,13 +1,51 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowRight, Zap, Lock, Download } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
-import { CATEGORIES } from '@/types';
+import { CATEGORIES, type Product } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function HomePage() {
-  const featured = MOCK_PRODUCTS[0];
-  const newest = MOCK_PRODUCTS.slice(0, 6);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, product_files(*)')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar produtos', error);
+        return;
+      }
+
+      const parsed = (data ?? []).map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        price: Number(item.price ?? 0),
+        videoUrl: item.video_url ?? '',
+        imageUrl: item.image_url ?? '',
+        createdAt: item.created_at ?? '',
+        files: (item.product_files ?? []).map((f: any) => ({
+          id: f.id,
+          productId: f.product_id,
+          fileName: f.file_name,
+          fileType: f.file_type,
+        })),
+      }));
+
+      setProducts(parsed);
+    };
+
+    loadProducts();
+  }, []);
+
+  const featured = products[0];
+  const newest = products.slice(0, 6);
 
   return (
     <div className="min-h-screen pt-16">
@@ -105,11 +143,15 @@ export default function HomePage() {
       {/* Products grid */}
       <section className="container mx-auto px-4 pb-20">
         <h2 className="section-heading mb-8">Novos Assets</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {newest.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} featured={i === 0} />
-          ))}
-        </div>
+        {newest.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">Nenhum produto encontrado.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {newest.map((product, i) => (
+              <ProductCard key={product.id} product={product} index={i} featured={i === 0} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -1,17 +1,48 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
-import { CATEGORIES, type Category } from '@/types';
+import { CATEGORIES, type Category, type Product } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function CategoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
   const activeCategory = (searchParams.get('cat') as Category) || null;
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      const { data, error } = await supabase.from('products').select('*, product_files(*)').order('created_at', { ascending: false });
+      if (error) {
+        console.error('Erro ao buscar produtos', error);
+        return;
+      }
+      setProducts(
+        (data ?? []).map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          price: Number(item.price ?? 0),
+          videoUrl: item.video_url ?? '',
+          imageUrl: item.image_url ?? '',
+          createdAt: item.created_at ?? '',
+          files: (item.product_files ?? []).map((f: any) => ({
+            id: f.id,
+            productId: f.product_id,
+            fileName: f.file_name,
+            fileType: f.file_type,
+          })),
+        }))
+      );
+    };
+
+    loadProducts();
+  }, []);
+
   const filtered = activeCategory
-    ? MOCK_PRODUCTS.filter((p) => p.category === activeCategory)
-    : MOCK_PRODUCTS;
+    ? products.filter((p) => p.category === activeCategory)
+    : products;
 
   return (
     <div className="min-h-screen pt-24">

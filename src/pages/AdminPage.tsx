@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, Upload, Package } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
 import { CATEGORIES, CATEGORY_MAP, type Category, type Product, type ProductFile } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
@@ -18,7 +17,7 @@ export default function AdminPage() {
         // ignore invalid localStorage
       }
     }
-    return MOCK_PRODUCTS;
+    return [];
   });
   const [showForm, setShowForm] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);

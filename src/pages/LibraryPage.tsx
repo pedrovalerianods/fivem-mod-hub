@@ -1,14 +1,47 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Package, Calendar } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
-import { CATEGORY_MAP } from '@/types';
+import { CATEGORY_MAP, type Product } from '@/types';
 import { toast } from '@/hooks/use-toast';
-
-// Mock: user purchased first 3 products
-const PURCHASED_IDS = ['1', '2', '3'];
+import { supabase } from '@/integrations/supabase/client';
 
 export default function LibraryPage() {
-  const purchased = MOCK_PRODUCTS.filter((p) => PURCHASED_IDS.includes(p.id));
+  const [purchased, setPurchased] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const loadPurchased = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, product_files(*)')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar biblioteca', error);
+        return;
+      }
+
+      setPurchased(
+        (data ?? []).map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          price: Number(item.price ?? 0),
+          videoUrl: item.video_url ?? '',
+          imageUrl: item.image_url ?? '',
+          createdAt: item.created_at ?? '',
+          files: (item.product_files ?? []).map((f: any) => ({
+            id: f.id,
+            productId: f.product_id,
+            fileName: f.file_name,
+            fileType: f.file_type,
+          })),
+        }))
+      );
+    };
+
+    loadPurchased();
+  }, []);
 
   const handleDownload = (title: string) => {
     toast({
