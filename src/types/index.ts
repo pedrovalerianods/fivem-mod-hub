@@ -48,7 +48,7 @@ export interface Order {
 
 export interface User {
   id: string;
-  discordId: string;
+  email: string;
   username: string;
   avatar?: string;
 }
