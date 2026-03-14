@@ -1,17 +1,46 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, LogIn, Package, History, Shield } from 'lucide-react';
+import { LogIn, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProfilePage() {
-  const handleDiscordLogin = () => {
-    toast({
-      title: 'Login com Discord',
-      description: 'Autenticação Discord será configurada com Lovable Cloud.',
-    });
-  };
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
 
-  // Mock user (not logged in state)
-  const isLoggedIn = false;
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsLoggedIn(Boolean(data.session));
+      setUsername(data.session?.user?.email ?? null);
+    };
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setIsLoggedIn(Boolean(session));
+      setUsername(session?.user?.email ?? null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleDiscordLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        scopes: 'identify email',
+      },
+    });
+
+    if (error) {
+      toast({ title: 'Login falhou', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Redirecionando', description: 'Autenticação Discord iniciada.' });
+  };
 
   if (!isLoggedIn) {
     return (
@@ -37,5 +66,21 @@ export default function ProfilePage() {
     );
   }
 
-  return null;
+  return (
+    <div className="min-h-screen pt-24 pb-20 flex items-center justify-center">
+      <div className="glass-surface rounded-xl p-10 max-w-md w-full text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-4">Bem-vindo ao Vault</h1>
+        <p className="text-muted-foreground mb-6">Você está logado como {username ?? 'usuário'}</p>
+        <button
+          className="btn-vault"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+          }}
+        >
+          Sair
+        </button>
+      </div>
+    </div>
+  );
 }

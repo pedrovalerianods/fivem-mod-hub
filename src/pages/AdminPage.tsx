@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, Upload, Package } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/data/mockProducts';
-import { CATEGORIES, CATEGORY_MAP, type Category } from '@/types';
+import { CATEGORIES, CATEGORY_MAP, type Category, type Product, type ProductFile } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
+const LOCAL_STORAGE_KEY = 'fivem-mod-hub-admin-products';
+
 export default function AdminPage() {
-  const [products] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as Product[];
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // ignore invalid localStorage
+      }
+    }
+    return MOCK_PRODUCTS;
+  });
   const [showForm, setShowForm] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -16,14 +30,70 @@ export default function AdminPage() {
     videoUrl: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({ title: 'Produto criado', description: `"${formData.title}" adicionado com sucesso.` });
-    setShowForm(false);
-    setFormData({ title: '', description: '', category: 'mods-de-som', price: '', videoUrl: '' });
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(products));
+  }, [products]);
+
+  const handleUploadFiles = (files: FileList | null) => {
+    if (!files) {
+      setSelectedFiles([]);
+      return;
+    }
+
+    const allowed = ['rpf', 'zip', 'xml', 'ini'];
+    const parsed = Array.from(files).filter((file) => {
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+      return allowed.includes(ext);
+    });
+    if (parsed.length !== files.length) {
+      toast({ title: 'Atenção', description: 'Apenas arquivos RPF, ZIP, XML ou INI são aceitos.' });
+    }
+    setSelectedFiles(parsed);
   };
 
-  const handleDelete = (title: string) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title.trim() || !formData.description.trim() || !formData.price.trim()) {
+      toast({ title: 'Preencha o formulário', description: 'Título, descrição e preço são obrigatórios.' });
+      return;
+    }
+
+    const price = Number(formData.price);
+    if (Number.isNaN(price) || price < 0) {
+      toast({ title: 'Preço inválido', description: 'Insira um valor válido para o preço.' });
+      return;
+    }
+
+    const id = `${Date.now()}`;
+    const files: ProductFile[] = selectedFiles.map((file, index) => ({
+      id: `${id}-f-${index}`,
+      productId: id,
+      fileName: file.name,
+      fileType: file.name.split('.').pop()?.toUpperCase() ?? 'FILE',
+    }));
+
+    const newProduct: Product = {
+      id,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      category: formData.category,
+      price,
+      videoUrl: formData.videoUrl.trim(),
+      imageUrl: '',
+      files,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+
+    setProducts((prev) => [newProduct, ...prev]);
+    setShowForm(false);
+    setSelectedFiles([]);
+    setFormData({ title: '', description: '', category: 'mods-de-som', price: '', videoUrl: '' });
+    toast({ title: 'Produto publicado', description: `"${newProduct.title}" foi criado.` });
+  };
+
+  const handleDelete = (id: string, title: string) => {
+    setProducts((prev) => prev.filter((product) => product.id !== id));
     toast({ title: 'Produto removido', description: `"${title}" foi excluído.` });
   };
 
@@ -91,12 +161,32 @@ export default function AdminPage() {
               required
             />
 
-            {/* File upload zone */}
-            <div className="border-2 border-dashed border-border/50 rounded-xl p-8 text-center hover:border-primary/30 transition-colors cursor-pointer">
-              <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-              <p className="text-sm text-muted-foreground">Arraste os arquivos ou clique para enviar</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">.RPF, .ZIP, .XML, .INI</p>
-            </div>
+            {/* File upload */}
+            <label className="block cursor-pointer rounded-xl border border-dashed border-border/50 p-4 hover:border-primary/50 transition-colors">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <Upload className="h-8 w-8 text-muted-foreground" strokeWidth={1.5} />
+                <p className="text-sm text-muted-foreground">Clique para selecionar arquivos</p>
+                <p className="text-xs text-muted-foreground/60">Apenas RPF, ZIP, XML, INI</p>
+              </div>
+              <input
+                type="file"
+                accept=".rpf,.zip,.xml,.ini"
+                multiple
+                className="hidden"
+                onChange={(e) => handleUploadFiles(e.target.files)}
+              />
+            </label>
+
+            {selectedFiles.length > 0 && (
+              <div className="rounded-lg border border-border/30 p-3 bg-muted/5 text-xs">
+                <strong className="uppercase tracking-wide">Arquivos selecionados</strong>
+                <ul className="mt-2 space-y-1">
+                  {selectedFiles.map((file) => (
+                    <li key={`${file.name}-${file.size}`}>{file.name}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="flex gap-3 justify-end">
               <button type="button" onClick={() => setShowForm(false)} className="btn-vault-outline">
@@ -154,7 +244,7 @@ export default function AdminPage() {
                           <Pencil className="h-4 w-4" strokeWidth={1.5} />
                         </button>
                         <button
-                          onClick={() => handleDelete(product.title)}
+                          onClick={() => handleDelete(product.id, product.title)}
                           className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                         >
                           <Trash2 className="h-4 w-4" strokeWidth={1.5} />
