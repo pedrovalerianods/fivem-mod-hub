@@ -16,7 +16,7 @@ export default function ProductCard({ product, index = 0, featured = false }: Pr
       transition={{ delay: index * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
       className={featured ? 'col-span-1 md:col-span-2' : ''}
     >
-      <Link to={`/produto/${product.id}`} className="card-product block">
+      <Link to={`/produto/${product.id}`} className="card-product group block">
         <div className="relative aspect-video overflow-hidden rounded-t-xl bg-muted/30">
           {product.imageUrl ? (
             <img

@@ -109,7 +109,7 @@
   }
 
   .card-product {
-    @apply group relative overflow-hidden rounded-xl border border-border/30 
+    @apply relative overflow-hidden rounded-xl border border-border/30 
            bg-card/40 backdrop-blur-xl p-0
            transition-all duration-500
            hover:bg-card/70 hover:border-primary/20 hover:scale-[1.02];
