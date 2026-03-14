@@ -71,12 +71,12 @@ export default function HomePage() {
               Compre, baixe e gerencie seus mods com segurança absoluta.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/categorias" className="btn-vault inline-flex items-center gap-2">
-                Acessar o Vault
+              <Link to="/perfil" className="btn-vault inline-flex items-center gap-2">
+                Entrar / Registrar
                 <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
               </Link>
-              <Link to="/biblioteca" className="btn-vault-outline inline-flex items-center gap-2">
-                Minha Biblioteca
+              <Link to="/files" className="btn-vault-outline inline-flex items-center gap-2">
+                Meus arquivos
               </Link>
             </div>
           </motion.div>

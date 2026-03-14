@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Menu, X, Library, User, LayoutDashboard } from 'lucide-react';
+import { Shield, Menu, X, User, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/perfil', label: 'Perfil' },
-  { to: '/admin', label: 'Meus Mods' },
+  { to: '/files', label: 'Meus arquivos' },
 ];
 
 export default function Navbar() {
@@ -52,9 +52,9 @@ export default function Navbar() {
             </div>
             Perfil
           </Link>
-          <Link to="/admin" className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors">
+          <Link to="/files" className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors">
             <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />
-            Meus Mods
+            Meus arquivos
           </Link>
         </div>
 
@@ -84,8 +84,8 @@ export default function Navbar() {
           <Link to="/perfil" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
             Perfil
           </Link>
-          <Link to="/admin" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
-            Meus Mods
+          <Link to="/files" onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground hover:text-primary">
+            Meus arquivos
           </Link>
         </motion.div>
       )}

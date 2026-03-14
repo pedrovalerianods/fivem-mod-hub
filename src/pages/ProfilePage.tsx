@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogIn, Shield, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function ProfilePage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -25,20 +27,29 @@ export default function ProfilePage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      toast({ title: 'Email obrigatório', description: 'Digite seu email para login.' });
+    if (!email.trim() || !password.trim()) {
+      toast({ title: 'Dados obrigatórios', description: 'Email e senha são necessários.' });
       return;
     }
 
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() });
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: password.trim() });
+      if (error) {
+        toast({ title: 'Erro no login', description: error.message, variant: 'destructive' });
+        return;
+      }
+      toast({ title: 'Logado', description: 'Você está logado com sucesso.' });
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({ email: email.trim(), password: password.trim() });
     if (error) {
-      toast({ title: 'Erro ao enviar link', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro no cadastro', description: error.message, variant: 'destructive' });
       return;
     }
-
-    toast({ title: 'Link enviado', description: 'Verifique seu email para fazer login.' });
+    toast({ title: 'Conta criada', description: 'Conta criada. Faça login com sua senha.' });
   };
 
   if (!isLoggedIn) {
@@ -49,8 +60,8 @@ export default function ProfilePage() {
             <Shield className="h-8 w-8 text-primary" strokeWidth={1.5} />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Acesse sua conta</h1>
-          <p className="text-sm text-muted-foreground mb-8">Insira seu email para receber o link mágico de login.</p>
-          <form onSubmit={handleMagicLink} className="space-y-3">
+          <p className="text-sm text-muted-foreground mb-8">Use email + senha para acessar seus arquivos.</p>
+          <form onSubmit={handleAuth} className="space-y-3">
             <input
               type="email"
               className="input-vault w-full"
@@ -59,10 +70,26 @@ export default function ProfilePage() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            <input
+              type="password"
+              className="input-vault w-full"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
             <button type="submit" className="btn-vault w-full flex items-center justify-center gap-2">
-              <LogIn className="h-4 w-4" /> Enviar Link
+              <LogIn className="h-4 w-4" /> {mode === 'login' ? 'Entrar' : 'Registrar'}
             </button>
           </form>
+          <div className="text-xs text-muted-foreground">
+            {mode === 'login' ? (
+              <>Ainda não tem conta? <button onClick={() => setMode('register')} className="text-primary underline">Registrar</button></>
+            ) : (
+              <>Já tem conta? <button onClick={() => setMode('login')} className="text-primary underline">Entrar</button></>
+            )}
+          </div>
         </motion.div>
       </div>
     );

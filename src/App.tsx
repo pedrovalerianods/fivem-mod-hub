@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Home from "@/pages/Home";
 import ProfilePage from "@/pages/ProfilePage";
-import AdminPage from "@/pages/AdminPage";
+import FilesPage from "@/pages/FilesPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/perfil" element={<ProfilePage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/files" element={<FilesPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

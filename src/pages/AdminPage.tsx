@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Pencil, Trash2, Upload, Package } from 'lucide-react';
+import { Upload, Trash2, FileText, LogOut } from 'lucide-react';
 import { CATEGORIES, CATEGORY_MAP, type Category, type Product, type ProductFile } from '@/types';
 import { toast } from '@/hooks/use-toast';
 
