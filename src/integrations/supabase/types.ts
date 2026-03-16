@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      downloads: {
+        Row: {
+          downloaded_at: string
+          id: string
+          product_file_id: string
+          user_id: string
+        }
+        Insert: {
+          downloaded_at?: string
+          id?: string
+          product_file_id: string
+          user_id: string
+        }
+        Update: {
+          downloaded_at?: string
+          id?: string
+          product_file_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "downloads_product_file_id_fkey"
+            columns: ["product_file_id"]
+            isOneToOne: false
+            referencedRelation: "product_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          id: string
+          product_id: string
+          purchase_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          purchase_date?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          purchase_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_files: {
         Row: {
           created_at: string
@@ -21,6 +82,7 @@ export type Database = {
           file_type: string
           id: string
           product_id: string
+          storage_path: string | null
         }
         Insert: {
           created_at?: string
@@ -28,6 +90,7 @@ export type Database = {
           file_type?: string
           id?: string
           product_id: string
+          storage_path?: string | null
         }
         Update: {
           created_at?: string
@@ -35,6 +98,7 @@ export type Database = {
           file_type?: string
           id?: string
           product_id?: string
+          storage_path?: string | null
         }
         Relationships: [
           {
@@ -79,15 +143,63 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -214,6 +326,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
