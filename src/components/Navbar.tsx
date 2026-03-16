@@ -5,7 +5,8 @@ import { useState } from 'react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
-  { to: '/perfil', label: 'Perfil' },
+  { to: '/categorias', label: 'Categorias' },
+  { to: '/biblioteca', label: 'Biblioteca' },
   { to: '/files', label: 'Meus arquivos' },
 ];
 

@@ -8,6 +8,10 @@ import Footer from "@/components/Footer";
 import Home from "@/pages/Home";
 import ProfilePage from "@/pages/ProfilePage";
 import FilesPage from "@/pages/FilesPage";
+import CategoriesPage from "@/pages/CategoriesPage";
+import ProductPage from "@/pages/ProductPage";
+import LibraryPage from "@/pages/LibraryPage";
+import AdminPage from "@/pages/AdminPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +27,10 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/files" element={<FilesPage />} />
+          <Route path="/categorias" element={<CategoriesPage />} />
+          <Route path="/produto/:id" element={<ProductPage />} />
+          <Route path="/biblioteca" element={<LibraryPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
